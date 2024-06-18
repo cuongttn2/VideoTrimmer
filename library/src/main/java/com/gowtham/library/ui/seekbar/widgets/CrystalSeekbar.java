@@ -62,6 +62,11 @@ public class CrystalSeekbar extends View {
         public static final int GRADIENT = 1;
     }
 
+    public static final class RemoveMode {
+        public static final int SIDE = 0;
+        public static final int MIDDLE = 1;
+    }
+
     //////////////////////////////////////////
     // PRIVATE VAR
     //////////////////////////////////////////

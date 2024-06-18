@@ -622,8 +622,10 @@ public class ActVideoTrimmer extends LocalizationActivity {
 //
 
             // Command
+//            ,scale=ih*16/9:ih,crop=out_w=ih*16/9:out_h=ih
+//                    "-vf", "select='between(t," + 0 + "," + lastMinValue + ")+between(t," + lastMaxValue1 + "," + totalDuration + ")',setpts=N/FRAME_RATE/TB,scale=iw*16/9:ih,setsar=9:16", // Bộ lọc video
             String startTime = TrimmerUtils.formatCSeconds(0);
-            String duration = TrimmerUtils.formatCSeconds(totalDuration - lastMaxValue1 - lastMinValue);
+            String duration = TrimmerUtils.formatCSeconds(totalDuration - lastMaxValue1 + lastMinValue);
             return new String[]{
                     "-ss",startTime, // Đặt thời gian bắt đầu
                     "-i", String.valueOf(filePath), // Đặt file đầu vào

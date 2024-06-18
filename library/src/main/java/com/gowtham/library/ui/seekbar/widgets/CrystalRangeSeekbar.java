@@ -85,6 +85,7 @@ public class CrystalRangeSeekbar extends View {
     private int barGradientStart;
     private int barGradientEnd;
     private int barHighlightColorMode;
+    private int removeMode;
     private int barHighlightColor;
     private int barHighlightGradientStart;
     private int barHighlightGradientEnd;
@@ -163,6 +164,7 @@ public class CrystalRangeSeekbar extends View {
             barGradientStart       = getBarGradientStart(array);
             barGradientEnd         = getBarGradientEnd(array);
             barHighlightColorMode  = getBarHighlightColorMode(array);
+            removeMode             = getRemoveMode(array);
             barHighlightColor      = getBarHighlightColor(array);
             barHighlightGradientStart = getBarHighlightGradientStart(array);
             barHighlightGradientEnd = getBarHighlightGradientEnd(array);
@@ -607,6 +609,10 @@ public class CrystalRangeSeekbar extends View {
         return typedArray.getInt(R.styleable.CrystalRangeSeekbar_bar_highlight_color_mode, CrystalSeekbar.ColorMode.SOLID);
     }
 
+    protected int getRemoveMode(final TypedArray typedArray) {
+        return typedArray.getInt(R.styleable.CrystalRangeSeekbar_remove_mode, CrystalSeekbar.RemoveMode.SIDE);
+    }
+
     protected int getBarHighlightColor(final TypedArray typedArray) {
         return typedArray.getColor(R.styleable.CrystalRangeSeekbar_bar_highlight_color, Color.BLACK);
     }
@@ -725,6 +731,34 @@ public class CrystalRangeSeekbar extends View {
 
             paint.setShader(null);
         }
+    }
+
+    private void setupUIRemoveMode(Canvas canvas, Paint paint) {
+        paint.setStyle(Paint.Style.FILL);
+        paint.setAntiAlias(true);
+        paint.setStrokeWidth(4);
+        paint.setColor(Color.RED);
+
+        if (removeMode == CrystalSeekbar.RemoveMode.SIDE) {
+            float startX = normalizedToScreen(normalizedMinValue) + (getThumbWidth() / 2);
+            float stopX = normalizedToScreen(normalizedMaxValue) + (getThumbWidth() / 2);
+            canvas.drawLine(startX, 0, stopX, 0, paint);
+            canvas.drawLine(startX, thumbHeight, stopX, thumbHeight, paint);
+        } else {
+//            line 1
+            float startX1 = 0;
+            float stopX1 = normalizedToScreen(normalizedMinValue) + (getThumbWidth() / 2);
+            canvas.drawLine(startX1, 0, stopX1, 0, paint);
+            canvas.drawLine(startX1, thumbHeight, stopX1, thumbHeight, paint);
+
+//            line 2
+            float startX2 = normalizedToScreen(normalizedMaxValue);
+            float stopX2 = getWidth();
+            canvas.drawLine(startX2, 0, stopX2, 0, paint);
+            canvas.drawLine(startX2, thumbHeight, stopX2, thumbHeight, paint);
+
+        }
+
     }
 
     protected void drawHighlightBar(final Canvas canvas, final Paint paint, final RectF rect){
@@ -1050,6 +1084,8 @@ public class CrystalRangeSeekbar extends View {
 
         // draw right thumb
         setupRightThumb(canvas, _paint, _rect);
+
+        setupUIRemoveMode(canvas,_paint);
 
     }
 

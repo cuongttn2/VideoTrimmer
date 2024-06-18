@@ -2,6 +2,10 @@
 <resources>
 
     <!-- Common attributes -->
+    <attr name="remove_mode" format="enum">
+        <enum name="side" value="0" />
+        <enum name="middle" value="1" />
+    </attr>
     <attr name="corner_radius" format="float" />
     <attr name="min_value" format="float" />
     <attr name="max_value" format="float" />
@@ -71,6 +75,7 @@
 
     <!-- Range Seekbar -->
     <declare-styleable name="CrystalRangeSeekbar" >
+        <attr name="remove_mode" />
         <attr name="corner_radius" />
         <attr name="min_value" />
         <attr name="max_value" />
