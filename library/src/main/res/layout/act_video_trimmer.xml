@@ -18,11 +18,29 @@
 
         <RelativeLayout style="@style/VWView">
 
-            <com.google.android.exoplayer2.ui.StyledPlayerView
-                android:id="@+id/player_view_lib"
-                style="@style/FView"
-                android:layout_gravity="center_vertical"
-                app:use_controller="false" />
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_marginVertical="20dp"
+                android:layout_height="match_parent">
+
+                <com.google.android.exoplayer2.ui.StyledPlayerView
+                    android:id="@+id/player_view_lib"
+                    style="@style/FView"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:use_controller="false" />
+
+                <com.gowtham.library.ui.cropframe.CropFrameView
+                    android:id="@+id/cropFrameView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:visibility="visible"
+                    app:aspect_ratio="ar_16_9" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
 
             <ImageView
                 android:id="@+id/image_play_pause"

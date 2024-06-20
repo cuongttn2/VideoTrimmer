@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
+    <!--    crop frame-->
+    <declare-styleable name="CropFrameView">
+        <attr name="aspect_ratio" format="enum">
+            <enum name="origin" value="0" />
+            <enum name="ar_16_9" value="1" />
+            <enum name="ar_1_1" value="2" />
+            <enum name="ar_4_5" value="3" />
+            <enum name="ar_9_16" value="4" />
+        </attr>
+    </declare-styleable>
     <!-- Common attributes -->
     <attr name="remove_mode" format="enum">
         <enum name="side" value="0" />

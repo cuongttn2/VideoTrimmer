@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Build;
@@ -20,6 +22,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -50,6 +53,7 @@ import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSource;
 import com.google.gson.Gson;
 import com.gowtham.library.R;
+import com.gowtham.library.ui.cropframe.CropFrameView;
 import com.gowtham.library.ui.seekbar.widgets.CrystalRangeSeekbar;
 import com.gowtham.library.ui.seekbar.widgets.CrystalSeekbar;
 import com.gowtham.library.utils.CompressOption;
@@ -75,6 +79,7 @@ public class ActVideoTrimmer extends LocalizationActivity {
     private static final int PER_REQ_CODE = 115;
     private StyledPlayerView playerView;
     private ExoPlayer videoPlayer;
+    private CropFrameView cropFrameView;
 
     private ImageView imagePlayPause;
 
@@ -94,7 +99,7 @@ public class ActVideoTrimmer extends LocalizationActivity {
     private long lastMinValue = 0;
 
     private long lastMaxValue1 = 0;
-    private long lastMaxValue2 = 0;
+    private final long lastMaxValue2 = 0;
 
     private MenuItem menuDone;
 
@@ -149,6 +154,23 @@ public class ActVideoTrimmer extends LocalizationActivity {
         setUpToolBar(getSupportActionBar(), trimVideoOptions.title);
         toolbar.setNavigationOnClickListener(v -> finish());
         progressView = new CustomProgressView(this);
+
+
+    }
+
+    private void initCropFrameView() {
+        playerView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                playerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                cropFrameView.setPlayerViewBounds(
+                        playerView.getLeft(),
+                        playerView.getTop(),
+                        playerView.getRight(),
+                        playerView.getBottom()
+                );
+            }
+        });
     }
 
     @Override
@@ -160,6 +182,7 @@ public class ActVideoTrimmer extends LocalizationActivity {
     protected void onPostCreate(@Nullable Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         playerView = findViewById(R.id.player_view_lib);
+        cropFrameView = findViewById(R.id.cropFrameView);
         imagePlayPause = findViewById(R.id.image_play_pause);
         seekbar1 = findViewById(R.id.range_seek_bar);
 //        seekbar2 = findViewById(R.id.range_seek_bar2);
@@ -181,6 +204,9 @@ public class ActVideoTrimmer extends LocalizationActivity {
         initPlayer();
         if (checkStoragePermission())
             setDataInView();
+
+        initCropFrameView();
+
     }
 
     private void setUpToolBar(ActionBar actionBar, String title) {
@@ -622,23 +648,46 @@ public class ActVideoTrimmer extends LocalizationActivity {
 //
 
             // Command
+//            crop=out_w:out_h:x:y
 //            ,scale=ih*16/9:ih,crop=out_w=ih*16/9:out_h=ih
+//            "-aspect","4:3",
 //                    "-vf", "select='between(t," + 0 + "," + lastMinValue + ")+between(t," + lastMaxValue1 + "," + totalDuration + ")',setpts=N/FRAME_RATE/TB,scale=iw*16/9:ih,setsar=9:16", // Bộ lọc video
             String startTime = TrimmerUtils.formatCSeconds(0);
             String duration = TrimmerUtils.formatCSeconds(totalDuration - lastMaxValue1 + lastMinValue);
+
+            Rect distances = cropFrameView.getDistancesToPlayerView();
+//            Float simRatio = (float) (w /playerView.getWidth());
+            Float simRatio = 1f;
+
+            int cfHeight = (int) (cropFrameView.getFrameHeight() * simRatio);
+            int cfWidth = (int) (cropFrameView.getFrameWidth() * simRatio);
+            int out_w = (int) (distances.left * simRatio);
+            int out_h = (int) (distances.top * simRatio);
+
+            Log.d("CROP_FRAME", "getCompressionCmd: " + simRatio);
+            Log.d("CROP_FRAME", "w: " + w + " h: " + h);
+            Log.d("CROP_FRAME", "cfWidth: " + cfWidth + " cfHeight: " + cfHeight);
+            Log.d("CROP_FRAME", "out_w: " + out_w + " out_h: " + out_h);
+            Log.d("CROP_FRAME", "outputPath: "+outputPath);
+
+            String cmdCrop = "crop=" + (w) + ":" + (h/2) + ":" + 0 + ":" + (0);
+            String cmdFilterVideo = "select='between(t," + 0 + "," + lastMinValue + ")+between(t," + lastMaxValue1 + "," + totalDuration + ")',setpts=N/FRAME_RATE/TB," + cmdCrop;
+            String cmdFilterAudio = "aselect='between(t," + 0 + "," + lastMinValue + ")+between(t," + lastMaxValue1 + "," + totalDuration + ")',asetpts=N/SR/TB";
+            String cmdAspect = "4:5";
+
             return new String[]{
-                    "-ss",startTime, // Đặt thời gian bắt đầu
+//                    "-ss",startTime, // Đặt thời gian bắt đầu
                     "-i", String.valueOf(filePath), // Đặt file đầu vào
-                    "-vf", "select='between(t," + 0 + "," + lastMinValue + ")+between(t," + lastMaxValue1 + "," + totalDuration + ")',setpts=N/FRAME_RATE/TB", // Bộ lọc video
-                    "-af", "aselect='between(t," + 0 + "," + lastMinValue + ")+between(t," + lastMaxValue1 + "," + totalDuration + ")',asetpts=N/SR/TB", // Bộ lọc âm thanh
-                    "-s", w + "x" + h, // Kích thước video
-                    "-r", "30", // Tốc độ khung hình
-                    "-vcodec", "mpeg4", // Codec video
-                    "-b:v", "1M", // Bitrate video
-                    "-b:a", "48000", // Bitrate âm thanh
-                    "-ac", "2", // Số kênh âm thanh
-                    "-ar", "22050", // Tần số mẫu âm thanh
-                    "-t", duration, // Đặt thời lượng
+                    "-vf", cmdCrop , // Bộ lọc video
+//                    "-af", cmdFilterAudio, // Bộ lọc âm thanh
+//                    "-s", cfWidth + "x" + cfHeight, // Kích thước video
+//                    "-r", "30", // Tốc độ khung hình
+//                    "-vcodec", "mpeg4", // Codec video
+//                    "-b:v", "1M", // Bitrate video
+//                    "-b:a", "48000", // Bitrate âm thanh
+//                    "-ac", "2", // Số kênh âm thanh
+//                    "-ar", "22050", // Tần số mẫu âm thanh
+//                    "-t", duration, // Đặt thời lượng
                     outputPath // Đầu ra file
             };
 
