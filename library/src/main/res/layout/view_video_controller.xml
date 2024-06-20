@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         app:bar_color="@android:color/transparent"
         app:bar_highlight_color="@android:color/transparent"
-        app:remove_mode="middle"
+        app:remove_mode="side"
         app:data_type="_integer"
         android:elevation="4dp"
         android:layout_marginStart="25dp"

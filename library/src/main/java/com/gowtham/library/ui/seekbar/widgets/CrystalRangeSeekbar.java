@@ -119,6 +119,7 @@ public class CrystalRangeSeekbar extends View {
     private int pointerIndex;
     private RectF _rect;
     private Paint _paint;
+    private Paint dimPaint;
 
     private RectF rectLeftThumb, rectRightThumb;
 
@@ -221,6 +222,8 @@ public class CrystalRangeSeekbar extends View {
         barPadding = getBarPadding();
 
         _paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        dimPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        dimPaint.setColor(Color.argb(95,0,0,0));
         _rect = new RectF();
         rectLeftThumb = new RectF();
         rectRightThumb = new RectF();
@@ -744,6 +747,9 @@ public class CrystalRangeSeekbar extends View {
             float stopX = normalizedToScreen(normalizedMaxValue) + (getThumbWidth() / 2);
             canvas.drawLine(startX, 0, stopX, 0, paint);
             canvas.drawLine(startX, thumbHeight, stopX, thumbHeight, paint);
+//             dim field
+            canvas.drawRect(0, 0, startX, thumbHeight, dimPaint); // draw left
+            canvas.drawRect(stopX, 0, getWidth(), thumbHeight, dimPaint); // draw right
         } else {
 //            line 1
             float startX1 = 0;
@@ -756,7 +762,8 @@ public class CrystalRangeSeekbar extends View {
             float stopX2 = getWidth();
             canvas.drawLine(startX2, 0, stopX2, 0, paint);
             canvas.drawLine(startX2, thumbHeight, stopX2, thumbHeight, paint);
-
+//             dim field
+            canvas.drawRect(stopX1, 0, startX2, thumbHeight, dimPaint);
         }
 
     }
